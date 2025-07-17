@@ -1,127 +1,145 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { PieChart, Pie, Cell } from "recharts";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Student Spinner</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(to bottom right, #cfe0fc, #e0d4fc);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      max-width: 500px;
+      height: 60px;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1em;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 10px;
+      background-color: #6366f1;
+      color: white;
+      cursor: pointer;
+    }
+    #spinnerCanvas {
+      margin-top: 20px;
+      width: 300px;
+      height: 300px;
+    }
+    .history {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Student Spinner</h1>
+  <textarea id="nameInput" placeholder="Enter up to 30 names separated by commas">Alice,Bob,Charlie,Diana,Evan</textarea>
+  <br />
+  <button onclick="updateNames()">Update Student List</button>
+  <button onclick="spinWheel()">Spin</button>
 
-const defaultStudents = [
-  "Alice", "Ben", "Chloe", "David", "Emma", "Frank", "Grace", "Hannah",
-  "Ian", "Jane", "Kyle", "Lily", "Mike", "Nora", "Owen", "Paula",
-  "Quinn", "Riley", "Sam", "Tina", "Umar", "Violet", "Wes", "Xander",
-  "Yara", "Zane", "Aiden", "Bella", "Caleb", "Diana"
-];
+  <canvas id="spinnerCanvas" width="300" height="300"></canvas>
 
-const COLORS = [
-  "#8884d8", "#8dd1e1", "#82ca9d", "#ffc658", "#d0ed57",
-  "#a4de6c", "#d88884", "#d4a4ff", "#ffd6a5", "#b5ead7",
-  "#ff9aa2", "#cbaacb", "#ffdac1", "#e2f0cb", "#b5ead7",
-  "#ffb7b2", "#f3ffe3", "#f9f9f9", "#e4f0f5", "#dbe9f4",
-  "#a1c6ea", "#c1e1c1", "#f7cac9", "#92a8d1", "#f7786b",
-  "#deeaee", "#b7d7e8", "#f0efeb", "#decba4", "#d5f4e6"
-];
+  <h2 id="selectedName"></h2>
+  <div class="history">
+    <h3>History</h3>
+    <ul id="historyList"></ul>
+  </div>
 
-export default function InteractiveStudentSpinner() {
-  const [students, setStudents] = useState(defaultStudents);
-  const [inputText, setInputText] = useState(defaultStudents.join(", "));
-  const [selected, setSelected] = useState(null);
-  const [spinning, setSpinning] = useState(false);
-  const [history, setHistory] = useState([]);
-  const [rotation, setRotation] = useState(0);
+  <script>
+    const canvas = document.getElementById("spinnerCanvas");
+    const ctx = canvas.getContext("2d");
+    const selectedName = document.getElementById("selectedName");
+    const historyList = document.getElementById("historyList");
+    let students = [];
+    let colors = [
+      "#8884d8", "#8dd1e1", "#82ca9d", "#ffc658", "#d0ed57", "#a4de6c",
+      "#d88884", "#d4a4ff", "#ffd6a5", "#b5ead7", "#ff9aa2", "#cbaacb",
+      "#ffdac1", "#e2f0cb", "#b5ead7", "#ffb7b2", "#f3ffe3", "#f9f9f9",
+      "#e4f0f5", "#dbe9f4", "#a1c6ea", "#c1e1c1", "#f7cac9", "#92a8d1",
+      "#f7786b", "#deeaee", "#b7d7e8", "#f0efeb", "#decba4", "#d5f4e6"
+    ];
+    let history = [];
+    let currentAngle = 0;
 
-  const updateNames = () => {
-    const names = inputText
-      .split(",")
-      .map(n => n.trim())
-      .filter(n => n)
-      .slice(0, 30);
-    setStudents(names);
-    setHistory([]);
-    setSelected(null);
-  };
+    function updateNames() {
+      const input = document.getElementById("nameInput").value;
+      students = input.split(",").map(name => name.trim()).filter(Boolean).slice(0, 30);
+      history = [];
+      historyList.innerHTML = "";
+      selectedName.textContent = "";
+      drawWheel();
+    }
 
-  const spin = () => {
-    if (students.length === 0) return;
-    setSpinning(true);
-    const duration = 3000;
-    const spins = 5;
-    const anglePerStudent = 360 / students.length;
-    const selectedIndex = Math.floor(Math.random() * students.length);
-    const finalRotation = spins * 360 + anglePerStudent * selectedIndex + Math.random() * anglePerStudent;
+    function drawWheel() {
+      const angle = (2 * Math.PI) / students.length;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      students.forEach((student, index) => {
+        ctx.beginPath();
+        ctx.moveTo(150, 150);
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.arc(150, 150, 150, angle * index, angle * (index + 1));
+        ctx.fill();
+        ctx.save();
+        ctx.translate(150, 150);
+        ctx.rotate(angle * (index + 0.5));
+        ctx.fillStyle = "black";
+        ctx.font = "12px sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(student, 130, 5);
+        ctx.restore();
+      });
+    }
 
-    setRotation(prev => prev + finalRotation);
+    function spinWheel() {
+      if (students.length === 0) return;
+      let duration = 3000;
+      let spinAngle = Math.floor(360 * 5 + Math.random() * 360);
+      let start = null;
 
-    setTimeout(() => {
-      const winner = students[selectedIndex];
-      setSelected(winner);
-      setHistory(prev => [winner, ...prev]);
-      setStudents(prev => prev.filter(s => s !== winner));
-      setSpinning(false);
-    }, duration);
-  };
+      function animate(timestamp) {
+        if (!start) start = timestamp;
+        const progress = timestamp - start;
+        const ease = 1 - Math.pow(1 - progress / duration, 3);
+        currentAngle = (spinAngle * ease) % 360;
+        canvas.style.transform = `rotate(${currentAngle}deg)`;
+        if (progress < duration) {
+          requestAnimationFrame(animate);
+        } else {
+          const winnerIndex = Math.floor((students.length * (360 - (currentAngle % 360))) / 360) % students.length;
+          const winner = students[winnerIndex];
+          selectedName.textContent = `🎉 Selected: ${winner}!`;
+          history.unshift(winner);
+          updateHistory();
+          students.splice(winnerIndex, 1);
+          drawWheel();
+        }
+      }
 
-  const pieData = students.map(name => ({ name, value: 1 }));
+      requestAnimationFrame(animate);
+    }
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 p-6 space-y-4">
-      <h1 className="text-4xl font-bold">🎯 Student Spinner</h1>
+    function updateHistory() {
+      historyList.innerHTML = history.map(name => `<li>${name}</li>`).join("");
+    }
 
-      <textarea
-        value={inputText}
-        onChange={e => setInputText(e.target.value)}
-        rows={3}
-        className="w-full max-w-xl p-3 border rounded shadow"
-        placeholder="Enter up to 30 names separated by commas"
-      />
-      <Button onClick={updateNames}>Update Student List</Button>
-
-      <motion.div
-        animate={{ rotate: spinning ? rotation : rotation }}
-        transition={{ duration: spinning ? 3 : 0 }}
-        className="w-[300px] h-[300px] flex items-center justify-center"
-      >
-        <PieChart width={300} height={300}>
-          <Pie
-            data={pieData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={120}
-            innerRadius={60}
-            fill="#8884d8"
-            label={({ name }) => name.length > 8 ? name.slice(0, 8) + '…' : name}
-          >
-            {pieData.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-        </PieChart>
-      </motion.div>
-
-      <Button onClick={spin} className="px-6 py-3 text-lg rounded-xl">
-        {spinning ? "Spinning..." : "Spin"}
-      </Button>
-
-      {selected && !spinning && (
-        <motion.p
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200 }}
-          className="text-2xl text-indigo-800 font-semibold"
-        >
-          🎉 Selected: {selected}!
-        </motion.p>
-      )}
-
-      {history.length > 0 && (
-        <div className="mt-4 text-center">
-          <h2 className="text-lg font-bold">History</h2>
-          <ul className="mt-2 space-y-1">
-            {history.map((name, idx) => (
-              <li key={idx}>✅ {name}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
+    updateNames();
+  </script>
+</body>
+</html>
