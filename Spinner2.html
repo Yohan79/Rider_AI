@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Name Spinner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .spinner-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .spinner {
+            width: 300px;
+            height: 300px;
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24, #f0932b, #eb4d4b, #6c5ce7, #a29bfe);
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease infinite;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .spinner.spinning {
+            animation: spin 3s cubic-bezier(0.25, 0.46, 0.45, 0.94), gradientShift 4s ease infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(1800deg); }
+        }
+
+        .spinner-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .spinner-center::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+        }
+
+        .spinner-arrow {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 30px solid #ff6b6b;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+        }
+
+        .spin-button {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .spin-button:disabled {
+            background: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .history {
+            margin-top: 30px;
+        }
+
+        .history h3 {
+            color: white;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .history-list {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .remaining-count {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin-top: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .popup.show {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .popup-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.5s ease;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .popup-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .selected-name {
+            color: #667eea;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-popup {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-popup:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .clear-history {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .clear-history:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Student Name Spinner</h1>
+        
+        <div class="controls">
+            <div class="input-group">
+                <label for="studentNames">Enter student names (separated by commas):</label>
+                <textarea id="studentNames" placeholder="John, Sarah, Mike, Lisa, David, Emma, Alex, Maya, Chris, Anna, Tom, Sophie, Jake, Lily, Ryan, Zoe, Ben, Grace, Sam, Olivia, Noah, Chloe, Ethan, Mia, Lucas, Ava, Mason, Ella, Logan, Aria"></textarea>
+            </div>
+        </div>
+
+        <div class="spinner-container">
+            <div class="spinner-arrow"></div>
+            <div class="spinner" id="spinner">
+                <div class="spinner-center"></div>
+            </div>
+            <button class="spin-button" id="spinButton">🎲 SPIN THE WHEEL!</button>
+            <div class="remaining-count" id="remainingCount">30 students remaining</div>
+        </div>
+
+        <div class="history">
+            <h3>📜 Selection History</h3>
+            <div class="history-list" id="historyList">
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.6); padding: 20px;">
+                    No students selected yet
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button class="clear-history" id="clearHistory">Clear History</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup" id="popup">
+        <div class="popup-content">
+            <h2>🎉 Selected Student!</h2>
+            <div class="selected-name" id="selectedName"></div>
+            <button class="close-popup" id="closePopup">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+        let selectedHistory = [];
+        let isSpinning = false;
+
+        const studentNamesInput = document.getElementById('studentNames');
+        const spinButton = document.getElementById('spinButton');
+        const spinner = document.getElementById('spinner');
+        const popup = document.getElementById('popup');
+        const selectedNameDisplay = document.getElementById('selectedName');
+        const closePopupButton = document.getElementById('closePopup');
+        const historyList = document.getElementById('historyList');
+        const remainingCount = document.getElementById('remainingCount');
+        const clearHistoryButton = document.getElementById('clearHistory');
+
+        // Initialize with default names
+        function initializeStudents() {
+            const defaultNames = "John, Sarah, Mike, Lisa, David, Emma, Alex, Maya, Chris, Anna, Tom, Sophie, Jake, Lily, Ryan, Zoe, Ben, Grace, Sam, Olivia, Noah, Chloe, Ethan, Mia, Lucas, Ava, Mason, Ella, Logan, Aria";
+            studentNamesInput.value = defaultNames;
+            updateStudentList();
+        }
+
+        function updateStudentList() {
+            const input = studentNamesInput.value.trim();
+            if (input) {
+                students = input.split(',').map(name => name.trim()).filter(name => name);
+                students = students.filter(name => !selectedHistory.includes(name));
+            } else {
+                students = [];
+            }
+            updateRemainingCount();
+        }
+
+        function updateRemainingCount() {
+            remainingCount.textContent = `${students.length} students remaining`;
+            spinButton.disabled = students.length === 0;
+        }
+
+        function updateHistory() {
+            if (selectedHistory.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; color: rgba(255, 255, 255, 0.6); padding: 20px;">No students selected yet</div>';
+            } else {
+                historyList.innerHTML = selectedHistory.map((name, index) => 
+                    `<div class="history-item">${index + 1}. ${name}</div>`
+                ).join('');
+            }
+        }
+
+        function spinWheel() {
+            if (isSpinning || students.length === 0) return;
+
+            isSpinning = true;
+            spinButton.disabled = true;
+            spinner.classList.add('spinning');
+
+            // Random selection
+            const selectedIndex = Math.floor(Math.random() * students.length);
+            const selectedStudent = students[selectedIndex];
+
+            // Show result after spin animation
+            setTimeout(() => {
+                spinner.classList.remove('spinning');
+                selectedNameDisplay.textContent = selectedStudent;
+                popup.classList.add('show');
+                
+                // Add to history and remove from available students
+                selectedHistory.push(selectedStudent);
+                students.splice(selectedIndex, 1);
+                
+                updateHistory();
+                updateRemainingCount();
+                isSpinning = false;
+            }, 3000);
+        }
+
+        function closePopup() {
+            popup.classList.remove('show');
+            spinButton.disabled = students.length === 0;
+        }
+
+        function clearHistory() {
+            selectedHistory = [];
+            updateStudentList();
+            updateHistory();
+        }
+
+        // Event listeners
+        studentNamesInput.addEventListener('input', updateStudentList);
+        spinButton.addEventListener('click', spinWheel);
+        closePopupButton.addEventListener('click', closePopup);
+        clearHistoryButton.addEventListener('click', clearHistory);
+
+        // Close popup when clicking outside
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                closePopup();
+            }
+        });
+
+        // Initialize
+        initializeStudents();
+    </script>
+</body>
+</html>
